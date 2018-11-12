@@ -1,0 +1,37 @@
+<?php
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\Entity\NodeType;
+
+/**
+ * {@inheritdoc}
+ */
+function netlify_entity_presave(EntityInterface $entity) {
+    $config = \Drupal::config('netlify.settings');
+    $netlify_build_hook_url = $config->get('netlify_build_hook_url');
+    $entity_node_types = NodeType::loadMultiple();
+
+    $node_types = [];
+    foreach($entity_node_types as $node_type) {
+      $id = $node_type->id();
+      $published_to_netlify = $config->get('netlify_node_type_' . $id);
+      if ($published_to_netlify) {
+          array_push($node_types, $id);
+      }
+    }
+
+    $entity_type = $entity->getEntityTypeId();
+    $entity_bundle = $entity->bundle();
+    $entity_state = $entity->status->getValue()[0]['value'];
+
+    if ($entity_type === 'node' && $entity_state === 1 && in_array($entity_bundle, $node_types)) {
+        try {
+            \Drupal::httpClient()->post($netlify_build_hook_url);
+            \Drupal::logger('netlify')->info(t('Successfully triggered Netlify build hook.'));
+        }
+        catch (RequestException $exception) {
+            \Drupal::messenger('netlify')->error(t('Failed to trigger Netlify build hook due to error "%error"', ['%error' => $exception->getMessage()]));
+            return FALSE;
+        }
+    }
+}
