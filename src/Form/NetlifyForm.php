@@ -2,14 +2,48 @@
 
 namespace Drupal\netlify\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\NodeType;
+use Drupal\Core\Entity\EntityTypeManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class NetlifyForm.
  */
 class NetlifyForm extends ConfigFormBase {
+
+  /**
+   * @var \Drupal\Core\Entity\EntityTypeManager $node_types
+   */
+  protected  $node_types;
+
+  /**
+   * Class constructor.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface
+   * @param \Drupal\Core\Entity\EntityTypeManager
+   *
+   * @throws \Exception
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManager $entityTypeManager) {
+    parent::__construct($config_factory);
+    try {
+      $this->node_types = $entityTypeManager->getStorage('node_type')
+        ->loadMultiple();
+    }
+    catch(\Exception $e) {
+      throw new \Exception('Failed to load node types: %error'. ['%error', $e->getMessage()]);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('@entity_type.manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -32,7 +66,6 @@ class NetlifyForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('netlify.settings');
-    $node_types = NodeType::loadMultiple();
 
     $form['netlify_build_hook_url'] = [
       '#type' => 'textfield',
@@ -46,7 +79,7 @@ class NetlifyForm extends ConfigFormBase {
       '#title' => $this->t('Trigger build hook for:'),
     ];
 
-    foreach ($node_types as $node_type) {
+    foreach ($this->node_types as $node_type) {
       $id = $node_type->id();
       $label = $node_type->label();
 
@@ -70,10 +103,9 @@ class NetlifyForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('netlify.settings');
-    $node_types = NodeType::loadMultiple();
     $config->set('netlify_build_hook_url', $form_state->getValue('netlify_build_hook_url'));
 
-    foreach ($node_types as $node_type) {
+    foreach ($this->node_types as $node_type) {
       $id = $node_type->id();
       $config->set('netlify_node_type_' . $id, $form_state->getValue('netlify_node_type_' . $id));
     }

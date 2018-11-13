@@ -4,4 +4,4 @@ netlify.netlify_form:
     _form: '\Drupal\netlify\Form\NetlifyForm'
     _title: 'Netlify'
   requirements:
-    _access: 'TRUE'
+    _permission: 'administer site configuration
