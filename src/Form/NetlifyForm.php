@@ -13,26 +13,26 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class NetlifyForm extends ConfigFormBase {
 
-  /**
-   * @var \Drupal\Core\Entity\EntityTypeManager $node_types
-   */
-  protected  $node_types;
+  protected  $nodeTypes;
 
   /**
    * Class constructor.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface
-   * @param \Drupal\Core\Entity\EntityTypeManager
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory to call super.
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   *   The entity type manager to get the id of all the node.
    *
    * @throws \Exception
    */
   public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManager $entityTypeManager) {
     parent::__construct($config_factory);
     try {
-      $this->node_types = $entityTypeManager->getStorage('node_type')
+      $this->nodeTypes = $entityTypeManager->getStorage('node_type')
         ->loadMultiple();
     }
-    catch(\Exception $e) {
-      throw new \Exception('Failed to load node types: %error'. ['%error', $e->getMessage()]);
+    catch (\Exception $e) {
+      throw new \Exception('Failed to load node types: %error', ['%error', $e->getMessage()]);
     }
   }
 
@@ -79,7 +79,7 @@ class NetlifyForm extends ConfigFormBase {
       '#title' => $this->t('Trigger build hook for:'),
     ];
 
-    foreach ($this->node_types as $node_type) {
+    foreach ($this->nodeTypes as $node_type) {
       $id = $node_type->id();
       $label = $node_type->label();
 
@@ -105,7 +105,7 @@ class NetlifyForm extends ConfigFormBase {
     $config = $this->config('netlify.settings');
     $config->set('netlify_build_hook_url', $form_state->getValue('netlify_build_hook_url'));
 
-    foreach ($this->node_types as $node_type) {
+    foreach ($this->nodeTypes as $node_type) {
       $id = $node_type->id();
       $config->set('netlify_node_type_' . $id, $form_state->getValue('netlify_node_type_' . $id));
     }
