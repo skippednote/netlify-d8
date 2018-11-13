@@ -4,4 +4,4 @@ netlify.netlify_form:
     _form: '\Drupal\netlify\Form\NetlifyForm'
     _title: 'Netlify'
   requirements:
-    _permission: 'administer site configuration
+    _permission: 'administer build hook'

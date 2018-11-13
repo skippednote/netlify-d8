@@ -8,9 +8,24 @@
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\node\Entity\NodeType;
 use GuzzleHttp\Exception\RequestException;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
- * {@inheritdoc}
+ * Implements hook_help().
+ */
+function netlify_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.netlify':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Netlify module lets you trigger build hooks for selected content types every time you save a node.') . '</p>';
+
+      return $output;
+  }
+  return NULL;
+}
+
+/**
+ * Implements hook_entity_presave().
  */
 function netlify_entity_presave(EntityInterface $entity) {
   $config = \Drupal::config('netlify.settings');

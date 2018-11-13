@@ -18,15 +18,12 @@ class NetlifyForm extends ConfigFormBase {
   /**
    * Class constructor.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory to call super.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager to get the id of all the node.
    *
    * @throws \Exception
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManager $entityTypeManager) {
-    parent::__construct($config_factory);
+  public function __construct(EntityTypeManager $entityTypeManager) {
     try {
       $this->nodeTypes = $entityTypeManager->getStorage('node_type')
         ->loadMultiple();
@@ -41,7 +38,7 @@ class NetlifyForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('@entity_type.manager')
+      $container->get('entity_type.manager')
     );
   }
 
