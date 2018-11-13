@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class NetlifyForm extends ConfigFormBase {
 
-  protected  $nodeTypes;
+  protected $nodeTypes;
 
   /**
    * Class constructor.
